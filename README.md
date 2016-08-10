@@ -3,6 +3,8 @@ easy
 
 easy is a minimalist LÖVE library that eases values ranging from 0 to 1.
 
+<img src="http://img4.hostingpics.net/pics/447735out.gif" alt="demo" width="540"/>
+
 Setup
 ----------------
 
@@ -29,14 +31,22 @@ ease(value, type)
 Easing types
 ----------------
 
-quad
-cubic
-quart
-quint
-expo
-sine
-circ
-back
-elastic
+**quad**
+
+**cubic**
+
+**quart**
+
+**quint**
+
+**expo**
+
+**sine**
+
+**circ**
+
+**back**
+
+**elastic**
 
 Add either "in" - "out" - "inout" at the end of each easing type
