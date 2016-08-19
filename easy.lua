@@ -5,46 +5,63 @@
 -- The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-local easing = {
-  quad    = "p * p",
-  cubic   = "p * p * p",
-  quart   = "p * p * p * p",
-  quint   = "p * p * p * p * p",
-  expo    = "2 ^ (10 * (p - 1))",
-  sine    = "-math.cos(p * (math.pi * .5)) + 1",
-  circ    = "-(math.sqrt(1 - (p * p)) - 1)",
-  back    = "p * p * (2.7 * p - 1.7)",
-  elastic = "-(2^(10 * (p - 1)) * math.sin((p - 1.075) * (math.pi * 2) / .3))"
+local easy = {}
+
+local default = {
+  quad    = "x * x",
+  cubic   = "x * x * x",
+  quart   = "x * x * x * x",
+  quint   = "x * x * x * x * x",
+  expo    = "2 ^ (10 * (x - 1))",
+  sine    = "-math.cos(x * (math.pi * .5)) + 1",
+  circ    = "-(math.sqrt(1 - (x * x)) - 1)",
+  back    = "x * x * (2.7 * x - 1.7)",
+  elastic = "-(2^(10 * (x - 1)) * math.sin((x - 1.075) * (math.pi * 2) / .3))"
 }
 
 local func = {}
 
-local makefunc = function(str, expr)
+local function makefunc(str, expr)
   local load = loadstring or load
-  return load("return function(p) " .. str:gsub("%$e", expr) .. " end")()
+  return load("return function(x) " .. str:gsub("%$e", expr) .. " end")()
+end
+
+local function generateEase(name, f)
+  func[name .. "in"] = makefunc("return $e", f)
+  func[name .. "out"] = makefunc([[
+    x = 1 - x
+    return 1 - ($e)
+  ]], f)
+  func[name .. "inout"] = makefunc([[
+    x = x * 2
+    if x < 1 then
+      return .5 * ($e)
+    else
+      x = 2 - x
+      return .5 * (1 - ($e)) + .5
+    end 
+  ]], f)
+end
+
+function easy:get(name, value)
+  if not func[name] then name = name .. "in" end
+  assert(func[name] ~= nil, "Function doesn't exist")
+  return func[name](value)
+end
+
+function easy:add(name, f)
+  assert(func[name] == nil, "Function already exists")
+  return generateEase(name, f)
 end
 
 --all credits to rxi
 
-for k, v in pairs(easing) do
-  func[k .. "in"] = makefunc("return $e", v)
-  func[k .. "out"] = makefunc([[
-    p = 1 - p
-    return 1 - ($e)
-  ]], v)
-  func[k .. "inout"] = makefunc([[
-    p = p * 2 
-    if p < 1 then
-      return .5 * ($e)
-    else
-      p = 2 - p
-      return .5 * (1 - ($e)) + .5
-    end 
-  ]], v)
+for k, v in pairs(default) do
+  generateEase(k, v)
 end
 
-local function easy(value, type)
-  return func[type](value)
-end
+--shortcut to easy:get
+
+setmetatable(easy, { __call = easy.get })
 
 return easy

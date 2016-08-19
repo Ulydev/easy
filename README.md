@@ -17,7 +17,7 @@ Usage
 
 Get converted value (0-1)
 ```lua
-converted = ease(value, "elasticin")
+converted = ease("elasticin", value)
 ```
 
 Methods and aliases
@@ -25,8 +25,16 @@ Methods and aliases
 
 Ease
 ```lua
-ease(value, type)
+ease(type, value)
+//->ease:get(...)
 ```
+
+Add easing function
+```lua
+ease:add(name, string)
+```
+string is a mathematical expression that takes a parameter called "x"
+for instance, "x * x + math.sqrt(x)"
 
 Easing types
 ----------------
